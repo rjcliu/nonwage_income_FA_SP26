@@ -11,6 +11,8 @@ set maxvar 100000
 * merge major variables in HRS 'hrs' to component variables 'hrsimp'
 *use $home\data\randhrs1992_2022v1.dta 
 *merge 1:1 hhidpn using $home\data\randhrsimp1992_2022v1.dta 
+*save $home\data\randrs1992_2022_merged.dta
+
 use $home\data\randrs1992_2022_merged.dta
 
 
@@ -71,6 +73,7 @@ keep hhid hhidp raracem rahispan ragender rabyear   `cap' `busin' `rntn' `trst' 
 egen maxage = min(rabyear), by(hhid)
 replace maxage = maxage == rabyear
 keep if maxage == 1
+drop maxage
 
 * to transform wide to long, change naming format from [r/s/h][survey wave #][var] to [r/s/h][var][survey year] 
 foreach resp in r s h { 
@@ -184,7 +187,7 @@ foreach i in hisav histk {
 
 replace hitrsin = 0 if year > 2002 & rwthh != . /*discontinued past wave 6 */
 
-*Other components only began to be reported after 1996 (bond, cd, checking, self-employment). I will impute these to 0 when missing. For my analysis these imputations only affect hinw_idda_noira. I will mostly use hinw_idda, which is calculated on 2000+ obs and these imputations shouldn't affect it. 
+*Other components only began to be reported after 1996 (bond, cd, checking, self-employment). I will impute these to 0 when missing. For my analysis these imputations only affect hinw_idda_noira. In my analysis, I always use hinw_idda, which is calculated on 2000+ obs and these imputations shouldn't affect it. 
 
 gen hint = hisav if year == 1994 
 replace hint = hibndin + hicdin + hichkin if year >= 1996 /*savings accounts, bonds, cds, checking, */
@@ -199,6 +202,7 @@ tab year if hinw_idda == . & rwthh != .
 
 gen htot_idda = hinw_idda + hiearn
 
+*aggregate income components for easier visualization in the data dive
 gen capital = hidivin + hirntin + hint + hiothi + hitrsin + histk 
 gen transfer = hisdi + hiunem
 gen pension = hipena + hiirawy1 

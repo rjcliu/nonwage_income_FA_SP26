@@ -1,5 +1,4 @@
 global home "C:\Users\IRRJL01\Dropbox\personal\IDDA\nuggets"
-
 use $home/data/hrs_cleaned.dta, replace 
 
 *convert incomes to real values for this exercise
@@ -18,15 +17,6 @@ foreach i in capital transfer pension earned socsec othr {
 }
 
 keep if inlist(TC,1,3)
-
-/*
-foreach i in capital transfer pension earned socsec othr { 
-	
-	gen prop`i' = `i'/hinw_idda
-}*/
-
-
-
 reshape long mean, i(xaged TC) j(income_type) string
 bysort xaged TC: gen mean_high = sum(mean)
 gen mean_low = mean_high - mean
