@@ -314,12 +314,6 @@ rename py0_htot_55t64 py0_htot
 append using `temp'
 
 
-/*
-twoway (connected p50 year if py0_htot == 4) ///
-(connected p50 year if py0_htot == 1),  name(pctl_levels,replace) ///
-	title("Real non-wage household income ($ 2019)") subtitle("Sample = household head aged 65+") ///
-	note("Source: HRS wave 5+. Household head = oldest household member") 
-*/ 
 foreach v in "wsi, 55t64" "nwi, 65+" {
 foreach i in 1 2 { 
 	
@@ -413,15 +407,12 @@ forvalues year = 2000(2)2022 {
 	
 	xtile py0_nwi_`year' = hinw_idda [aw = rwthh] if year == `year', nquantiles(4)
 	xtile py0_htot_`year' = hitot [aw = rwthh] if year == `year' , nquantiles(4)
-	*xtile py0_asset_`year' = hatotb [aw = rwthh] if year == `year' , nquantiles(2)
 	
 	replace py0_nwi = py0_nwi_`year' if py0_nwi == . 
 	replace py0_htot = py0_htot_`year' if py0_htot == . 
-	*replace py0_asset = py0_asset_`year' if py0_asset == . 
 	
 	drop py0_nwi_`year' 
-	drop py0_htot_`year' 
-	*	drop py0_asset_`year' 
+	drop py0_htot_`year'  
 	}
 
 collapse (median) median_nw_share = nw_share_of_total_income (mean) mean_nw_share = nw_share_of_total_income (count) n = nw_share_of_total_income [aw = rwthh], by(py0_htot)
