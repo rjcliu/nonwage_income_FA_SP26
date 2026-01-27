@@ -92,10 +92,6 @@ graph bar hinw_idda hiearn , over(xagea) over(stat) legend(order(1 "Non-wage" 2 
 title("Household income components by age ($2022)") note("Source: HRS waves 5+. Median is derived from a pooled sample over multiple waves." "Values are inflation-adjusted before calculating median.") ///
 name(median_incomecomp_xagea, replace)
 
-/*graph bar htot_idda , over(xagea) over(stat) legend(order(1 "Non-wage" 2 "Earnings")) stack ///
-title("Household income by age ($2022)") note("Source: HRS waves 5+. Median is derived from a pooled sample over multiple waves." "Values are inflation-adjusted before calculating median.") ///
-name(median_income_xagea, replace) */
-
 
 graph export "$home/graphs/median_incomecomp_xagea.png" ,name(median_incomecomp_xagea) replace
 
