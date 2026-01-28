@@ -23,6 +23,8 @@ name(median_incomecomp_xagea, replace)
 
 
 graph export "$home/graphs/median_incomecomp_xagea.png" ,name(median_incomecomp_xagea) replace
+export delimited "$home/out/median_incomecomp_xagea.csv" , replace
+
 
 
 *************************************
@@ -41,15 +43,49 @@ gen hiearn_adj = hiearn/PCEPI if age < retage
 gen hinw_adj = hinw_idda/PCEPI if age >= retage
 collapse (mean) hiearn_adj hinw_adj age rwthh, by(hhidpn xred) 
 
+
+/*
+keep if hiearn_adj >= 5000
+preserve 
+gen quintile_wages_xred = . 
+
+foreach i in 0 1 2 { 
+	
+	xtile quintile_wages_temp = hiearn_adj [aw = rwthh] if xred == `i', nq(5)
+	replace quintile_wages_xred = quintile_wages_temp if quintile_wages_xred == . 
+	drop quintile_wages_temp
+}
+
+collapse (mean) hiearn_adj hinw_adj (count) hhidpn [aw = rwthh] if inlist(xred,0,1,2), by(xred quintile_wages_xred)
+
+twoway (scatter hinw_adj hiearn_adj if xred == 0) (scatter hinw_adj hiearn_adj if xred == 1) (scatter hinw_adj hiearn_adj if xred == 2)
+
+restore
+xtile quintile_wages = hiearn_adj [aw = rwthh], nq(5) 
+collapse (mean) hiearn_adj hinw_adj (count) hhidpn [aw = rwthh] if inlist(xred,0,1,2), by(xred quintile_wages)
+
+twoway (scatter hinw_adj hiearn_adj if xred == 0, ms(O)) ///
+(scatter hinw_adj hiearn_adj if xred == 1, ms(D)) ///
+(scatter hinw_adj hiearn_adj if xred == 2, ms(T)), ///
+xtitle("Mean wages pre-retirement, 2022 dollars") ///
+ytitle("") ///
+note("Source: HRS wave 5+, individuals must be observed for 6 periods centered around retirement. " "Retirement age within 60-70. Mean earnings must be above $5,000. Data is binned into 5 equal-sized groups.") title("Mean non-wage income post-retirement, 2022 dollars") ///
+name(scatter_ret_passthru_xred, replace) ///
+legend(order(1 "White" 2 "Black" 3 "Hispanic"))
+ylab(0(50000)200000) xlab(0(50000) 200000)  
+*/
+
+
 binscatter hinw_adj hiearn_adj if inrange(age, 60,70) & xred != 3 & hiearn_adj >= 5000, ///
 xtitle("Mean wages pre-retirement, 2022 dollars") ///
 ytitle("") ///
 msymbols(O T D) ///
 note("Source: HRS wave 5+, individuals must be observed for 6 periods centered around retirement. " "Retirement age within 60-70. Mean earnings must be above $5,000. Data is binned into 5 equal-sized groups.") title("Mean non-wage income post-retirement, 2022 dollars") ///
 name(scatter_ret_passthru_xred, replace) by(xred) line(none) n(5) ///
-ylab(0(50000)200000) xlab(0(50000) 200000)
+ylab(0(50000)200000) xlab(0(50000) 200000) ///
+savedata("$home/out/scatter_ret_passthru_xred.csv") replace
 
-graph export "$home/graphs/scatter_ret_passthru_xred.png", name(scatter_ret_passthru_xred) replace
+graph export "$home/graphs/scatter_ret_passthru_xred.png", name(scatter_ret_passthru_xred) replace 
 
 ***********************************************************************
 * Draw Pr(WSI >0 | htot_idda  quartile) over time
@@ -82,6 +118,12 @@ twoway 	(connected pos_wsi year if py0_`bin' == 1) ///
 		name(pos_wsi, replace) 
 		
 graph export "$home/graphs/pos_wsi.png", replace name(pos_wsi)	
+
+keep if py0_htot == 1 | py0_htot == 4 
+keep year py0_htot pos_wsi 
+order py0_htot year pos_wsi
+sort py0_htot year pos_wsi
+export delimited "$home/out/pos_wsi.csv", replace
 	
 **********************************************
 *mean nwi share of hhincome by total hh income quartile using pooled sample 
@@ -116,6 +158,10 @@ graph bar mean_nw_share, over(py0_htot) note("Source: Pooled HRS wave 5+, where 
 ylab(0(0.25)1) name(mean_nw_share,replace)
 
 graph export "$home/graphs/mean_nw_share.png", name(mean_nw_share) replace
+
+keep py0_htot mean_nw_share 
+drop if py0_htot == .
+export delimited "$home/out/mean_nw_share.csv", replace
 
 
 

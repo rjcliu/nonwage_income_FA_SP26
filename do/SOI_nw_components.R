@@ -72,8 +72,11 @@ share_of_income_by_component <- share_of_income_by_component[inc != 'iradist']
 
 #set 'inc' to a factor variable ordered by the order of nonwage income components within the 1st pctl of agi 
 share_of_income_by_component <- share_of_income_by_component[order(pctl,share_total_nw)]
-share_of_income_by_component$inc <- factor(share_of_income_by_component$inc, 
-                                           levels = c('pension','businc','int','other','div','scorp','cpgain'))
+share_of_income_by_component[, inc := factor(inc, 
+                                           levels = c('pension','businc','int','other','div','scorp','cpgain'))]
+
+share_of_income_by_component[,pctl := factor(pctl, levels = c("total","01"))]
+
 
 g2 <- ggplot(data = share_of_income_by_component[inc != 'sal'], mapping = aes(x = pctl, y = share_total_nw, fill = inc)) + 
   geom_col(position = 'stack') + 
