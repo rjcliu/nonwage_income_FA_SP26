@@ -17,15 +17,21 @@ foreach i in hinw_idda hiearn {
 collapse (median) hinw_idda (median) hiearn  [aw = rwthh], by(xagea) 
 
 
-graph bar hinw_idda hiearn, over(xagea) legend(order(1 "Non-wage" 2 "Earnings")) stack ///
-title("Household income components by age ($2022)") note("Source: HRS waves 5+. Median is derived from a pooled sample over multiple waves." "Values are inflation-adjusted before calculating median.") ///
-name(median_incomecomp_xagea, replace)
+graph bar hinw_idda hiearn, over(xagea) legend(order(1 "Nonwage" 2 "Earnings")) stack /// 
+name(median_incomecomp_xagea, replace) ///
+legend(order(1 "Median nonwage income" 2 "Median wage and salary income") pos(6)) ///
+ylabel(0 "$0" 20000 "$20,000" 40000 "$40,000" 60000 "$60,000" 80000 "$80,000") ///
+    note("Age", position(6) ring(1))
 
+	///note("Source: HRS waves 5+. Median is derived from a pooled sample over multiple waves." "Values are inflation-adjusted before calculating median.") ///
 
-graph export "$home/graphs/median_incomecomp_xagea.png" ,name(median_incomecomp_xagea) replace
-export delimited "$home/out/median_incomecomp_xagea.csv" , replace
+graph export "$home/graphs/figure_4.png" ,name(median_incomecomp_xagea) replace
 
+rename hinw_idda nonwage_income
+rename hiearn wage_income
+export delimited "$home/out/figure_4.csv" , replace
 
+//Figure 4 
 
 *************************************
 * draw scatter of wages pre-retirement to nonwage income post-retirement by race for balanced panel of retirees 
@@ -44,48 +50,30 @@ gen hinw_adj = hinw_idda/PCEPI if age >= retage
 collapse (mean) hiearn_adj hinw_adj age rwthh, by(hhidpn xred) 
 
 
-/*
-keep if hiearn_adj >= 5000
-preserve 
-gen quintile_wages_xred = . 
-
-foreach i in 0 1 2 { 
-	
-	xtile quintile_wages_temp = hiearn_adj [aw = rwthh] if xred == `i', nq(5)
-	replace quintile_wages_xred = quintile_wages_temp if quintile_wages_xred == . 
-	drop quintile_wages_temp
-}
-
-collapse (mean) hiearn_adj hinw_adj (count) hhidpn [aw = rwthh] if inlist(xred,0,1,2), by(xred quintile_wages_xred)
-
-twoway (scatter hinw_adj hiearn_adj if xred == 0) (scatter hinw_adj hiearn_adj if xred == 1) (scatter hinw_adj hiearn_adj if xred == 2)
-
-restore
-xtile quintile_wages = hiearn_adj [aw = rwthh], nq(5) 
-collapse (mean) hiearn_adj hinw_adj (count) hhidpn [aw = rwthh] if inlist(xred,0,1,2), by(xred quintile_wages)
+keep if inrange(age, 60, 70)
+keep if xred != 3 & hiearn_adj >= 5000
+xtile wage_quintile = hiearn_adj [aw = rwthh], n(5)
+collapse (mean) hinw_adj (mean) hiearn_adj [aw= rwthh] if xred != ., by(xred wage_quintile)
 
 twoway (scatter hinw_adj hiearn_adj if xred == 0, ms(O)) ///
-(scatter hinw_adj hiearn_adj if xred == 1, ms(D)) ///
-(scatter hinw_adj hiearn_adj if xred == 2, ms(T)), ///
-xtitle("Mean wages pre-retirement, 2022 dollars") ///
-ytitle("") ///
-note("Source: HRS wave 5+, individuals must be observed for 6 periods centered around retirement. " "Retirement age within 60-70. Mean earnings must be above $5,000. Data is binned into 5 equal-sized groups.") title("Mean non-wage income post-retirement, 2022 dollars") ///
-name(scatter_ret_passthru_xred, replace) ///
-legend(order(1 "White" 2 "Black" 3 "Hispanic"))
-ylab(0(50000)200000) xlab(0(50000) 200000)  
-*/
+(scatter hinw_adj hiearn_adj if xred == 1, ms(T)) ///
+(scatter hinw_adj hiearn_adj if xred == 2, ms(D)), ///
+xtitle("Mean wages pre-retirement") ///
+ytitle("Mean nonwage income post-retirement") ///
+legend(order(1 "White" 2 "Black" 3 "Hispanic")) ///
+ylab(20000 "$20,000" 40000 "$40,000" 60000 "$60,000" 80000 "$80,000" 100000 "$100,000") ///
+xlab(0 "$0" 50000 "$50,000" 100000 "$100,000" 150000 "$150,000" 200000 "$200,000")  ///
+name(scatter_y_prepostretirement, replace)
 
 
-binscatter hinw_adj hiearn_adj if inrange(age, 60,70) & xred != 3 & hiearn_adj >= 5000, ///
-xtitle("Mean wages pre-retirement, 2022 dollars") ///
-ytitle("") ///
-msymbols(O T D) ///
-note("Source: HRS wave 5+, individuals must be observed for 6 periods centered around retirement. " "Retirement age within 60-70. Mean earnings must be above $5,000. Data is binned into 5 equal-sized groups.") title("Mean non-wage income post-retirement, 2022 dollars") ///
-name(scatter_ret_passthru_xred, replace) by(xred) line(none) n(5) ///
-ylab(0(50000)200000) xlab(0(50000) 200000) ///
-savedata("$home/out/scatter_ret_passthru_xred.csv") replace
+//note("Source: HRS wave 5+, individuals must be observed for 6 periods centered around retirement. " "Retirement age within 60-70. Mean earnings must be above $5,000. Data is binned into 5 equal-sized groups.")  
 
-graph export "$home/graphs/scatter_ret_passthru_xred.png", name(scatter_ret_passthru_xred) replace 
+graph export "$home/graphs/figure_7.png", name(scatter_ret_passthru_xred) replace 
+
+rename hinw_adj nonwage_income
+rename hiearn_adj wage_income
+drop wage_quintile
+export delimited "$home/out/figure_7", replace
 
 ***********************************************************************
 * Draw Pr(WSI >0 | htot_idda  quartile) over time
@@ -112,18 +100,24 @@ collapse (mean) pos_wsi (mean) age (count) hhidpn [aw = rwthh], by(year py0_`bin
 
 twoway 	(connected pos_wsi year if py0_`bin' == 1) ///
 		(connected pos_wsi year if py0_`bin' == 4), ///
-		title("Pr(WSI>0 | aged 65+)") ///
-		note("HRS waves 5+, households where oldest member is 65+.") ///
-		legend(title("household income") order(1 "Bottom-quartile" 2 "Top-quartile")) ///
+		legend(title("") order(1 "Bottom quartile household income" 2 "Top quartile household income") pos(6)) ///
+		xtitle("") ///
+		ytitle("Probability of working at age 65+") /// 
+		ylabel(0 "0%" 0.2 "20%" 0.4 "40%" 0.6 "60%") ///
 		name(pos_wsi, replace) 
 		
-graph export "$home/graphs/pos_wsi.png", replace name(pos_wsi)	
+//note("HRS waves 5+, households where oldest member is 65+.") ///
+		
+graph export "$home/graphs/figure_6.png", replace name(pos_wsi)	
 
 keep if py0_htot == 1 | py0_htot == 4 
 keep year py0_htot pos_wsi 
 order py0_htot year pos_wsi
 sort py0_htot year pos_wsi
-export delimited "$home/out/pos_wsi.csv", replace
+label def quartiles 1 "bottom quartile" 2 "2nd quartile" 3 "3rd quartile" 4 "top quartile"
+
+lab val py0_htot quartiles
+export delimited "$home/out/figure_6.csv", replace
 	
 **********************************************
 *mean nwi share of hhincome by total hh income quartile using pooled sample 
@@ -139,7 +133,7 @@ keep if xaged >= 5
 gen py0_nwi = .
 gen py0_htot = . 
 gen py0_asset = .
- * calculate for 1998 beyond only, because sample has a consistent age distribution after then - see, 'HRS Longitudinal Cohort sample design' https://hrs.isr.umich.edu/documentation/survey-design
+ * calculate for 2000 beyond only, because sample has a consistent age distribution after then - see, 'HRS Longitudinal Cohort sample design' https://hrs.isr.umich.edu/documentation/survey-design
 forvalues year = 2000(2)2022 { 
 	
 	xtile py0_nwi_`year' = hinw_idda [aw = rwthh] if year == `year', nquantiles(4)
@@ -154,14 +148,19 @@ forvalues year = 2000(2)2022 {
 
 collapse (median) median_nw_share = nw_share_of_total_income (mean) mean_nw_share = nw_share_of_total_income (count) n = nw_share_of_total_income [aw = rwthh], by(py0_htot)
 
-graph bar mean_nw_share, over(py0_htot) note("Source: Pooled HRS wave 5+, where oldest member of household is 65+") ytitle("") title("Mean nonwage share of household income | 65+") subtitle("By quartiles of household income") ///
-ylab(0(0.25)1) name(mean_nw_share,replace)
+label def quartiles 1 "bottom quartile" 2 "2nd quartile" 3 "3rd quartile" 4 "top quartile"
+lab values py0_htot quartiles
 
-graph export "$home/graphs/mean_nw_share.png", name(mean_nw_share) replace
+graph bar mean_nw_share, over(py0_htot) ytitle("Nonwage share of household income") note("Household income quartile", pos(6)) ///
+ylab(0 "0%" .25 "25%" 0.5 "50%" .75 "75%" 1 "100%") name(mean_nw_share,replace) 
+
+/// note("Source: Pooled HRS wave 5+, where oldest member of household is 65+")
+
+graph export "$home/graphs/figure_5.png", name(mean_nw_share) replace
 
 keep py0_htot mean_nw_share 
 drop if py0_htot == .
-export delimited "$home/out/mean_nw_share.csv", replace
+export delimited "$home/out/figure_5.csv", replace
 
 
 

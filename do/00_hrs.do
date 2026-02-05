@@ -164,10 +164,10 @@ replace xagea = 4 if inrange(age, 55,64)
 replace xagea = 5 if inrange(age, 65, 74)
 replace xagea = 6 if inrange(age, 75, 114)
 
-lab define xaged 0 "16t24" 1 "25t34" 2 "35t44" 3 "45t54" 4 "55t64" 5 "65t74" 6 "75t84" 7 "85t94" 8 "95t104" 9 "105t114"   
+lab define xaged 0 "16-24" 1 "25-34" 2 "35-44" 3 "45-54" 4 "55-64" 5 "65-74" 6 "75-84" 7 "85-94" 8 "95-104" 9 "105-114"   
 lab val xaged xaged
 
-lab define xagea 0 "16t24" 1 "25t34" 2 "35t44" 3 "45t54" 4 "55t64" 5 "65t74" 6 "75+"
+lab define xagea 0 "16-24" 1 "25-34" 2 "35-44" 3 "45-54" 4 "55-64" 5 "65-74" 6 "75+"
 lab val xagea xagea
 
 gen xred = 0 if rarace == 1 & rahispan != 1 
@@ -175,7 +175,7 @@ replace xred = 1 if rarace == 2 & rahispan != 1
 replace xred = 2 if rahispan == 1 
 replace xred = 3 if rarace == 3 & rahispan != 1 
  
-lab define xred 0 "NH White" 1 "NH Black" 2 "Hispanic" 3 "NH Other"
+lab define xred 0 "White" 1 "Black" 2 "Hispanic" 3 "Other"
 lab val xred xred
 
 

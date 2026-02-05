@@ -74,17 +74,40 @@ share_of_income_by_component <- share_of_income_by_component[inc != 'iradist']
 share_of_income_by_component <- share_of_income_by_component[order(pctl,share_total_nw)]
 share_of_income_by_component[, inc := factor(inc, 
                                            levels = c('pension','businc','int','other','div','scorp','cpgain'))]
-
 share_of_income_by_component[,pctl := factor(pctl, levels = c("total","01"))]
+share_of_income_by_component[,pctl_label := fifelse(pctl == 'total', 'All','Top 1%')]
+share_of_income_by_component[,pctl_label := factor(pctl_label, levels = c("All","Top 1%"))]
+
+share_of_income_by_component[,inc := fcase( 
+  inc == 'pension', 'pension and IRAs', 
+  inc == 'businc', 'business income',
+  inc == 'int', 'interest', 
+  inc == 'other', 'other',
+  inc == 'div', 'dividends',
+  inc == 'scorp', 'S-corp income', 
+  inc == 'cpgain', 'capital gains'
+  )]
+
+share_of_income_by_component[, inc := factor(inc, 
+                                             levels = c('pension and IRAs','business income','interest',
+                                                        'other','dividends','S-corp income','capital gains'))]
 
 
-g2 <- ggplot(data = share_of_income_by_component[inc != 'sal'], mapping = aes(x = pctl, y = share_total_nw, fill = inc)) + 
+
+g2 <- ggplot(data = share_of_income_by_component[inc != 'sal'], mapping = aes(x = pctl_label, y = share_total_nw, fill = inc)) + 
   geom_col(position = 'stack') + 
-  ggtitle('Shares of total non-wage income, US, 2022', subtitle = 'Source: IRS') +
-  scale_y_continuous(labels = scales::percent)
+  ylab('Share of total nonwage income') +
+  scale_y_continuous(labels = scales::percent) +
+  xlab('') +
+  labs(fill = '')
 
-ggsave(paste0(getwd(),'/graphs/shares_total_nwi.png'), g2)
-write.csv(g2$data, file = paste0(getwd(),'/out/shares_total_nwi.csv'))
+ggsave(paste0(getwd(),'/graphs/figure_3.png'), g2)
+
+out <- setDT(g2$data)
+out <- out[,.(share_total_nw,pctl_label,inc)]
+write.csv(out, file = paste0(getwd(),'/out/figure_3.csv'))
+
+#Figure 3 
 
 
 
