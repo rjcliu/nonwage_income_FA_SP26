@@ -9,11 +9,11 @@ set maxvar 100000
 
 **load in RAND HRS files 
 * merge major variables in HRS 'hrs' to component variables 'hrsimp'
-*use $home\data\randhrs1992_2022v1.dta 
-*merge 1:1 hhidpn using $home\data\randhrsimp1992_2022v1.dta 
-*save $home\data\randrs1992_2022_merged.dta
+use $home\data\randhrs1992_2022v1.dta 
+merge 1:1 hhidpn using $home\data\randhrsimp1992_2022v1.dta 
+save $home\data\randrs1992_2022_merged.dta
 
-use $home\data\randrs1992_2022_merged.dta
+*use $home\data\randrs1992_2022_merged.dta
 
 
 *****************************************
@@ -76,8 +76,6 @@ loc sdi  s9isdi s8isdi s7isdi s6isdi s5isdi s4isdi s3isdi s2isdi s1isdi s16isdi 
 
 *keep race, hispanicity, gender, bith year, earnings (earn), respondent weight, nonwage income components 
 keep hhid hhidpn raracem rahispan ragender rabyear pn  `busin' `rntn' `trst' `dividend' `bndin'  `chkin'  `cdin' `isemp' `wthh' `othi' `iunem'  `othr' `earn' `pena'  `ssret' `ira' `wthh' `sayret' `sdi'
-
-
 
 * Keep only individuals who were the oldest member of the original household at time of entry into the survey 
 keep if inlist(pn, "010", "020") /*keep only original household members */ 
