@@ -9,14 +9,19 @@ set maxvar 100000
 
 **load in RAND HRS files 
 * merge major variables in HRS 'hrs' to component variables 'hrsimp'
-* use $home\data\randhrs1992_2022v1.dta 
+*use $home\data\randhrs1992_2022v1.dta 
 *merge 1:1 hhidpn using $home\data\randhrsimp1992_2022v1.dta 
 *save $home\data\randrs1992_2022_merged.dta
 
 use $home\data\randrs1992_2022_merged.dta
 
 
-* It's useful to have all income variables in a standard naming format for reshaping to long
+*****************************************
+*Create a long dataset using the HRS of the format [hhipdn] [survey_year] [vars...].  
+* 	Our sample is the oldest members of original HRS households. We follow this sample longitudinally.  
+*	We'll only keep [vars...] we use for figures. 
+
+* It's useful to have all income variables in a standard naming format for reshaping to long. Rename hiothi for this purpose. 
 
 * other asset income is split into variables h[survey $]iothi[1/2/3/4]. Create a summed total.
 forvalues i = 2(1)16 { 
@@ -70,16 +75,17 @@ loc sdi  s9isdi s8isdi s7isdi s6isdi s5isdi s4isdi s3isdi s2isdi s1isdi s16isdi 
 /*DI income, social security disability income */ 
 
 *keep race, hispanicity, gender, bith year, earnings (earn), respondent weight, nonwage income components 
-keep hhid hhidp raracem rahispan ragender rabyear   `busin' `rntn' `trst' `dividend' `bndin'  `chkin'  `cdin' `isemp' `wthh' `othi' `iunem'  `othr' `earn' `pena'  `ssret' `ira' `wthh' `sayret' `sdi'
+keep hhid hhidpn raracem rahispan ragender rabyear pn  `busin' `rntn' `trst' `dividend' `bndin'  `chkin'  `cdin' `isemp' `wthh' `othi' `iunem'  `othr' `earn' `pena'  `ssret' `ira' `wthh' `sayret' `sdi'
 
 
 
-* Keep only individuals who were the oldest member of their household at time of entry into the survey 
+* Keep only individuals who were the oldest member of the original household at time of entry into the survey 
+keep if inlist(pn, "010", "020") /*keep only original household members */ 
 egen maxage = min(rabyear), by(hhid)
 replace maxage = maxage == rabyear
 keep if maxage == 1
 
-* if age is tied keep a random indvl per hhid 
+* if age is tied keep a random indvl per original hhid 
 set seed 12345   // optional, for reproducibility
 gen u = runiform()
 bysort hhid (u): keep if _n == 1
@@ -88,7 +94,7 @@ drop u maxage
 
 
 
-* to transform wide to long, change naming format from [r/s/h][survey wave #][var] to [r/s/h][var][survey year] 
+* to transform wide to long, change variable naming format from [r/s/h][survey wave #][var] to [r/s/h][var][survey year] 
 foreach resp in r s h { 
 	loc y = 1992 
 	forvalues i = 1(1) 16 { 
@@ -108,7 +114,7 @@ foreach resp in r s h {
 	}
 }
 
-/*rename weights, and retirement status variables to reshape wide to long*/ 
+/*rename weights, and retirement status variables for reshaping */
 foreach var in wthh sayret { 
 loc y = 1992
 	forvalues i = 1(1) 16 { 
@@ -127,11 +133,10 @@ reshape long hiothr riearn siearn ripena sipena ///
 gen age = year - rabyear if rwthh!= .
 		
 *I now have a long dataset of HRS survey participants who were the oldest respondent in their household during initial entry 
-codebook hhid if age <51  /*Note that there are certain household-respondents who report age<51 in some obs. I thought these might be new partners of divorced pairs, but according to HRS documentation, hhid identifies any households derived from the original household. 
-So those new partners would be dropped. I'm not sure who these respondents are. */ 
+codebook hhid if age <51  /*Note that there are certain original household-respondents who were the oldest in their original household and yet report age<51 in some obs. Don't know how but according to HRS documentation these people shouldn't exist*/
 /*It's a very small number of household-respondents (140/29,000) I'm just going to go ahead and drop the household-respondent if age is ever <51.  */ 
 gen age_lt51 = age < 51 
-egen ever_lt51 = max(age_lt51), by(hhid)
+egen ever_lt51 = max(age_lt51), by(hhidpn)
 drop if ever_lt51 == 1 
 drop ever_lt51 age_lt51
 
@@ -195,7 +200,7 @@ gen hint = hibndin + hicdin + hichkin if rwthh != . /*savings accounts, bonds, c
 gen hinw_idda = hidivin + hibusin + hirntin + hipena + hisret + hiunem + hisemp + hint + hisdi + hiothr + hitrsin  + hiothi +hiirawy1 
 /* dividends, business, rental, pensions + annuities, socsec, UI, self-employment, interest, DI, misc. asset income, misc. nonasset non-wage income, + trust interest + annual IRA disbursement. */
 
-gen htot_idda = hinw_idda + hiearn
+gen htot_idda = hinw_idda + hiearn /*total household income */
 
 *aggregate income components for easier visualization in the data dive
 gen capital = hidivin + hirntin + hint + hiothi + hitrsin 

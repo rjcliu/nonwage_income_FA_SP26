@@ -1,5 +1,5 @@
 *************************************
-*draw bar chart of levels of median earned, unearned income by age group in HRS 2000+ pooled
+*draw bar chart of levels of median household earned, unearned household income by age group in HRS 2000+ pooled
 	
 global home "C:\Users\IRRJL01\Dropbox\personal\IDDA\nuggets"
 
@@ -59,8 +59,8 @@ collapse (mean) hinw_adj (mean) hiearn_adj (count) hhidpn [aw= rwthh] if xred !=
 twoway (scatter hinw_adj hiearn_adj if xred == 0, ms(O)) ///
 (scatter hinw_adj hiearn_adj if xred == 1, ms(T)) ///
 (scatter hinw_adj hiearn_adj if xred == 2, ms(D)), ///
-xtitle("Mean wages pre-retirement") ///
-ytitle("Mean nonwage income post-retirement") ///
+xtitle("Mean household wages pre-retirement") ///
+ytitle("Mean household nonwage income post-retirement") ///
 legend(order(1 "White" 2 "Black" 3 "Hispanic")) ///
 ylab(20000 "$20,000" 40000 "$40,000" 60000 "$60,000" 80000 "$80,000" 100000 "$100,000") ///
 xlab(0 "$0" 50000 "$50,000" 100000 "$100,000" 150000 "$150,000" 200000 "$200,000")  ///
@@ -106,7 +106,7 @@ twoway 	(connected pos_wsi year if py0_htot == 1) ///
 		ylabel(0 "0%" 0.2 "20%" 0.4 "40%" 0.6 "60%") ///
 		name(pos_wsi, replace) 
 		
-//note("HRS waves 5+, households where oldest member is 65+.") ///
+//note("Source: Pooled HRS waves 5+ households, where oldest member is 65+.") ///
 		
 graph export "$home/graphs/figure_6.png", replace name(pos_wsi)	
 
@@ -149,7 +149,7 @@ lab values py0_htot quartiles
 graph bar mean_nw_share, over(py0_htot) ytitle("Nonwage share of household income") note("Household income quartile", pos(6)) ///
 ylab(0 "0%" .25 "25%" 0.5 "50%" .75 "75%" 1 "100%") name(mean_nw_share,replace) 
 
-/// note("Source: Pooled HRS wave 5+, where oldest member of household is 65+")
+/// note("Source: Pooled HRS wave 5+ households, where oldest member of household is 65+")
 
 graph export "$home/graphs/figure_5.png", name(mean_nw_share) replace
 
