@@ -1,3 +1,6 @@
+*Draw stacked area charts of nonwage income components across age 
+	* Draw charts by tercile of household earnings at age 53/54
+
 global home "C:\Users\IRRJL01\Dropbox\personal\IDDA\nuggets"
 use $home/data/hrs_cleaned.dta, replace 
 
@@ -7,7 +10,7 @@ foreach i in capital transfer pension earned socsec othr hinw_idda hiearn htot_i
 	replace `i' = `i'/PCEPI
 } 
 
-*calculate components of average household income by age
+*calculate mean value of nonwage income components by age and tercile of household income at age 53/54 (com)
 keep if hinw_idda != . & TC != .
 collapse (mean) capital (mean) transfer (mean) pension (mean) earned (mean) socsec (mean) othr (mean) hinw_idda (mean) htot_idda (mean) hiearn [aw = rwthh], by(xaged TC) 
 
@@ -19,6 +22,7 @@ foreach i in capital transfer pension earned socsec othr {
 keep if inlist(TC,1,3)
 reshape long mean, i(xaged TC) j(income_type) string
 
+/*convert string values to labeled numeric for easy ordering */ 
 replace income_type = "5" if income_type == "transfer" 
 replace income_type = "4" if income_type == "socsec" 
 replace income_type = "3" if income_type == "pension"
