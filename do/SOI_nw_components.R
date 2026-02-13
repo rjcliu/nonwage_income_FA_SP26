@@ -5,7 +5,8 @@ library(tidyverse)
 
 rm(list = ls())
 
-setwd("C:/Users/IRRJL01/Dropbox/personal/IDDA/nuggets")
+#setwd("C:/Users/IRRJL01/Dropbox/personal/IDDA/nuggets")
+setwd("SET TO YOUR DIRECTORY HERE")
 #setwd('C:/Users/richa/Dropbox/personal/IDDA/nuggets')
 
 

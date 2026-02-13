@@ -1,7 +1,7 @@
 *************************************
 *draw bar chart of levels of median household earned, unearned household income by age group in HRS 2000+ pooled
 	
-global home "C:\Users\IRRJL01\Dropbox\personal\IDDA\nuggets"
+global home "SET_YOUR_HOME_DIRECTORY_HERE"
 
 use $home/data/hrs_cleaned.dta, replace 
 

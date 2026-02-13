@@ -1,4 +1,4 @@
-global home "SET_YOUR_HOME_DIRECTORY_HERE"
+global home "package_directory_here"
 
 frames reset 
 clear

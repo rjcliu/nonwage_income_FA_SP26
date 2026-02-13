@@ -1,8 +1,7 @@
 library(data.table)
 library(ggplot2)
-setwd('C:/Users/IRRJL01/Dropbox/personal/IDDA/nuggets/')
-
-#F
+#setwd('C:/Users/IRRJL01/Dropbox/personal/IDDA/nuggets/')
+setwd('SET TO YOUR DIRECTORY HERE')
 
 pctls <- fread(paste0(getwd(),"/data/Voorheis_pctl_of_inc_release_T13T26.csv"))
 
